@@ -3,9 +3,9 @@ import numpy as np
 from collections import deque
 import math
 
-# ==========================================
+
 # CONFIGURATION & DEFAULT HSV THRESHOLDS
-# ==========================================
+
 # Default HSV range for Blue Object
 BLUE_LOWER = np.array([95, 100, 60])
 BLUE_UPPER = np.array([135, 255, 255])
