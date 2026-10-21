@@ -1,9 +1,4 @@
-"""
-Real-Time ArUco Marker Detection, Pose Estimation, and Depth Measurement
-Optimized for VS Code & Python (OpenCV 4.x compatible).
-Detects 4x4, 5x5, and 6x6 ArUco markers simultaneously.
-Tags can be generated from: https://chev.me/arucogen
-"""
+
 
 import cv2
 import numpy as np
@@ -36,14 +31,12 @@ MULTI_DICT_KEYS = ["DICT_4X4_250", "DICT_5X5_250", "DICT_6X6_250"]
 
 
 def has_gui_display():
-    """Checks if a graphical desktop window can be displayed."""
     if sys.platform in ("win32", "darwin"):
         return True
     return bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
 
 
 def get_default_camera_matrix(width, height):
-    """Approximates focal length and principal point if no calibration file exists."""
     focal_length = float(width)
     cx, cy = float(width) / 2.0, float(height) / 2.0
     camera_matrix = np.array([
@@ -56,7 +49,6 @@ def get_default_camera_matrix(width, height):
 
 
 def load_camera_calibration(calib_file):
-    """Loads camera calibration from JSON if available."""
     if not calib_file or not os.path.exists(calib_file):
         return None, None
     try:
@@ -69,7 +61,6 @@ def load_camera_calibration(calib_file):
 
 
 def create_aruco_detector(dict_enum):
-    """Creates detector instance compatible with OpenCV >= 4.7 and older versions."""
     dictionary = cv2.aruco.getPredefinedDictionary(dict_enum)
     parameters = cv2.aruco.DetectorParameters()
     if hasattr(cv2.aruco, "CORNER_REFINE_SUBPIX"):
@@ -83,7 +74,6 @@ def create_aruco_detector(dict_enum):
 
 
 def detect_markers(image, detector_pack):
-    """Detects marker corners and IDs."""
     mode, detector, dictionary, parameters = detector_pack
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(image.shape) == 3 else image
     if mode == "new":
@@ -94,7 +84,6 @@ def detect_markers(image, detector_pack):
 
 
 def estimate_pose_single_marker(corners, marker_size, camera_matrix, dist_coeffs):
-    """Estimates 3D pose using IPPE square planar solver."""
     half_size = marker_size / 2.0
     obj_points = np.array([
         [-half_size,  half_size, 0.0],
@@ -108,14 +97,12 @@ def estimate_pose_single_marker(corners, marker_size, camera_matrix, dist_coeffs
 
 
 def rotation_to_euler_angles(rvec):
-    """Converts Rodrigues vector to Roll, Pitch, Yaw in degrees."""
     R, _ = cv2.Rodrigues(rvec)
     angles, _, _, _, _, _ = cv2.RQDecomp3x3(R)
     return angles[2], angles[0], angles[1]  # roll, pitch, yaw
 
 
 def draw_axes(image, camera_matrix, dist_coeffs, rvec, tvec, length):
-    """Draws 3D axes (X: Red, Y: Green, Z: Blue)."""
     if hasattr(cv2, "drawFrameAxes"):
         cv2.drawFrameAxes(image, camera_matrix, dist_coeffs, rvec, tvec, length, 2)
     elif hasattr(cv2.aruco, "drawAxis"):
@@ -123,7 +110,6 @@ def draw_axes(image, camera_matrix, dist_coeffs, rvec, tvec, length):
 
 
 def draw_info_overlay(frame, detections_info, mode_name, fps, calib_status, show_hud=True):
-    """Overlays telemetry panels and badges onto the frame."""
     if not show_hud:
         return frame
 
@@ -173,7 +159,6 @@ def draw_info_overlay(frame, detections_info, mode_name, fps, calib_status, show
 
 
 def process_frame(frame, active_detectors, marker_size, camera_matrix, dist_coeffs):
-    """Detects markers and calculates 3D pose across dictionaries."""
     detections_info = []
 
     for dict_name, detector_pack in active_detectors.items():
